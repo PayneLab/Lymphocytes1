@@ -8,7 +8,7 @@ from os import path
 
 def load_proteinGroups():
     #This function returns a dataframe.
-    file = download_file(download_to_path="data/proteinGroups_example.txt")
+    file = download_file(download_to_path="data/proteinGroups.txt")
     #Here we read in a tab-separated file with headers in the first row
     #    and index names in the first column.
     df = pd.read_csv(file, sep='\t', header=0, index_col=0)
@@ -23,7 +23,7 @@ def load():
     #    By default, it will look for ones starting with 'Reporter intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    file = download_file(download_to_path="data/proteinGroups_example.txt")
+    file = download_file(download_to_path="data/proteinGroups.txt")
         
     prefix="Intensity"
     contains=["_"]
