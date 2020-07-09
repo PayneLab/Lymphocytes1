@@ -6,24 +6,14 @@ from os import path
 #Data loader functions belong here. This is where
 #  information about the data files is found.
 
-def load_proteinGroups():
-    #This function returns a dataframe.
-    file = download_file(download_to_path="data/proteinGroups.txt")
-    #Here we read in a tab-separated file with headers in the first row
-    #    and index names in the first column.
-    df = pd.read_csv(file, sep='\t', header=0, index_col=0)
-    #This dataframe is then returned.
-    return df
-
-
-def load():
+def load_max_quant():
     #Takes a file and returns a dataframe.
     #    file: the file path to read from
     #    The rest of the paramters are used to select the columns.
     #    By default, it will look for ones starting with 'Reporter intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    file = download_file(download_to_path="data/proteinGroups.txt")
+    file = download_file(download_to_path="data/proteinGroups.txt", url_file_path="data/proteinGroups_url.txt")
         
     prefix="Intensity"
     contains=["_"]
