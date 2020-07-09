@@ -29,8 +29,11 @@ def load_max_quant():
     
     final_col = ["Protein IDs"]
     for i in headings: final_col.append(i)
-    try: df = pd.read_csv(file, sep='\t', header=0, index_col=0, usecols=final_col)
-    except: df = pd.read_excel(file, sep='\t', header=0, index_col=0, usecols=final_col)
+    df = pd.read_csv(file, sep='\t', header=0, index_col=0)
+    df = df.drop(df[df['Potential contaminant'] == '+'].index)
+    df = df.drop(df[df.Reverse == '+'].index)
+    df = df.drop(df[df['Only identified by site'] == '+'].index)
+    df = df[headings]
 
     return df
 
