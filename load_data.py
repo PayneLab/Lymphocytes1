@@ -80,3 +80,21 @@ def download_file(download_to_path="data/datafile.txt", url_file_path="data/url.
                 with open(download_to_path, 'wb') as dest:
                     dest.write(response.content)
     return download_to_path
+
+def load_fasta():
+    file="data/uniprot-filtered-proteome_3AUP000005640_reviewed_human.fasta"
+    #file is formated:
+    #>sp|Q96IY4|CBPB2_HUMAN Carboxypeptidase B2 OS=Homo sapiens OX=9606 GN=CPB2 PE=1 SV=2
+    #MKLCS...
+    headings = {}
+    with open(file) as f:
+        for line in f:
+            if line.startswith('>'):#header line
+                ID = line.split('|')[1]
+                name=line.split('|')[2].split('=')[0].strip('OS')
+                headings[ID]=name
+    headings = pd.Series(list(headings.values()), index=headings.keys())
+    return headings
+
+                
+                
