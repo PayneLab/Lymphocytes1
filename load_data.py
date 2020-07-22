@@ -13,7 +13,7 @@ def load_max_quant():
     #    By default, it will look for ones starting with 'Reporter intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    file = download_file(download_to_path="data/proteinGroups.txt", url_file_path="data/proteinGroups_url.txt")
+    file = download_file(download_to_path="data/proteinGroups-Sub1-ungrouped-not_LFQ_norm.txt", url_file_path="data/proteinGroups_url.txt")
         
     prefix="Intensity"
     contains=["_"]
@@ -94,7 +94,35 @@ def load_fasta():
                 name=line.split('|')[2].split('=')[0].strip('OS')
                 headings[ID]=name
     headings = pd.Series(list(headings.values()), index=headings.keys())
+    
     return headings
 
-                
+        
+def names_max_quant():
+    file = download_file(download_to_path="data/proteinGroups.txt", url_file_path="data/proteinGroups_url.txt")
+    df = pd.read_csv(file, sep='\t', header=0, index_col=0, usecols=['Protein IDs','Gene names','Fasta headers'])
+    
+    """by_group={}
+    for ID in df.index:
+        if ';' in ID:
+            headers = df['Fasta headers'][ID].split(';')
+            names=''
+            for i in headers:
+                if i !='':
+                    n = i.split('|')[2].split('=')[0].strip('OS')
+                    names=names+n+';'
+            names=names[:-1]
+            by_group[ID]=names
+        else: 
+            i = df['Fasta headers'][ID]
+            if str(i) != 'nan':
+                i.split('|')[2].split('=')[0].strip('OS')
+                by_group[ID]=i
+    by_group = pd.Series(list(by_group.values()), index=by_group.keys())
+
+    df['Names']=by_group"""
+
+    return df
+    
+    
                 
