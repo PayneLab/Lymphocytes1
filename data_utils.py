@@ -58,7 +58,9 @@ def get_fold_changes(row, cell_types=["1_B_", "1_T_"]):
 
 #get higher-in-B and higher-in-T proteins
 def is_altered(tscore, pvalue=.01,change_factor=2):
-    log2_fold_change=log2(change_factor)
+    if change_factor > 0:
+        log2_fold_change=log2(change_factor)
+    else: log2_fold_change=0
     if tscore['pvalue'] < pvalue:
         if tscore['log2(B)-log2(T)'] > log2_fold_change:
             #first type is statistically bigger
