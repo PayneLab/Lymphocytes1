@@ -33,9 +33,9 @@ def check_presence_absence(row, cell_types=["1_B_", "1_T_"], min_reps=3):
         present_in_types[i] = in_type
     if 0 in list(present_in_types.values()):#absent in one type
         if present_in_types[cell_types[0]] >= min_reps:
-            return "B_cell"
+            return cell_types[0]
         elif present_in_types[cell_types[1]]>= min_reps:
-            return "T_cell"
+            return cell_types[1]
         
 def ttest_wrapper(row, cell_types = ["1_B_", "1_T_"]):
     split_row = []
@@ -57,16 +57,16 @@ def get_fold_changes(row, cell_types=["1_B_", "1_T_"]):
 
 
 #get higher-in-B and higher-in-T proteins
-def is_altered(tscore, pvalue=.01,change_factor=2):
+def is_altered(tscore, pvalue=.01,change_factor=2, cell_types=["B cells", "T cells"]):
     if change_factor > 0:
         log2_fold_change=log2(change_factor)
     else: log2_fold_change=0
     if tscore['pvalue'] < pvalue:
         if tscore['log2(B)-log2(T)'] > log2_fold_change:
             #first type is statistically bigger
-            return 'B cells'
+            return cell_types[0]
         elif tscore['log2(B)-log2(T)'] < -log2_fold_change:
             #second type is statistically bigger
-            return "T cells"
+            return cell_types[1]
         
         

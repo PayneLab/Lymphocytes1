@@ -37,6 +37,41 @@ def load_max_quant():
 
     return df
 
+def load_FragPipe(month='June', contains=['Subject1']):
+    #Takes a file and returns a dataframe.
+    #    file: the file path to read from
+    #    The rest of the paramters are used to select the columns.
+    #    By default, it will look for ones ending with 'Total intensity'
+    #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
+    #        column as the indecies. These will be the raw intensity values.
+    file_name="data/combined_protein_{0}_FP.tsv".format(month)
+    url_file_path="data/combined_protein_{0}_FP_url.txt".format(month)
+    file = download_file(download_to_path=file_name, url_file_path=url_file_path)
+    if file==1:
+        print("Error with file download.")
+        return False
+        
+    suffix="Total Intensity"
+
+    with open(file, 'r') as _file:
+        line = _file.readline().strip()
+        headings = line.split('\t')
+    headings = [i.strip('"') for i in headings]
+    if suffix:#filter by columns beginning in prefix
+        headings = [i for i in headings if i.endswith(suffix)]
+    for req in contains:
+        headings = [i for i in headings if req in i]
+    
+    final_col = ["Protein IDs"]
+    for i in headings: final_col.append(i)
+    df = pd.read_csv(file, sep='\t', header=0, index_col=3)
+    #df = df.drop(df[df['Potential contaminant'] == '+'].index)
+    #df = df.drop(df[df.Reverse == '+'].index)
+    #df = df.drop(df[df['Only identified by site'] == '+'].index)
+    df = df[headings]
+
+    return df
+
 def download_file(download_to_path="data/datafile.txt", url_file_path="data/url.txt", 
                   password_file_path="data/password.txt", redownload=False):
     """Download a file from a given url to the specified location.
@@ -47,9 +82,13 @@ def download_file(download_to_path="data/datafile.txt", url_file_path="data/url.
     """
         
     if redownload or path.exists(download_to_path) == False: #If the file has been downloaded, or the user wants to update, download the file
-        url_file = open(url_file_path, 'r')
-        url = url_file.read().strip()
-        url_file.close()
+        if path.exists(url_file_path):
+            url_file = open(url_file_path, 'r')
+            url = url_file.read().strip()
+            url_file.close()
+        else: 
+            print("MISSING URL FILE")
+            return 1
         
         if path.exists(password_file_path):
             password_file = open(password_file_path, 'r')
@@ -57,6 +96,7 @@ def download_file(download_to_path="data/datafile.txt", url_file_path="data/url.
             password_file.close()
         else:
             print("MISSING PASSWORD FILE")
+            return 1
         
         for i in range(2):
 
