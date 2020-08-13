@@ -52,6 +52,7 @@ def load_FragPipe(month='June', contains=['Subject1']):
         return False
         
     suffix="Total Intensity"
+    not_contains=['15']#drop extra replicate - Yiran said it wasn't good quality, I just forgot to not run it so for now I'll exclude it at this level
 
     with open(file, 'r') as _file:
         line = _file.readline().strip()
@@ -61,8 +62,10 @@ def load_FragPipe(month='June', contains=['Subject1']):
         headings = [i for i in headings if i.endswith(suffix)]
     for req in contains:
         headings = [i for i in headings if req in i]
+    for req in not_contains:
+        headings = [i for i in headings if req not in i]
     
-    final_col = ["Protein IDs"]
+    final_col = ["Protein ID"]
     for i in headings: final_col.append(i)
     df = pd.read_csv(file, sep='\t', header=0, index_col=3)
     #df = df.drop(df[df['Potential contaminant'] == '+'].index)
@@ -141,28 +144,13 @@ def load_fasta():
 def names_max_quant():
     file = download_file(download_to_path="data/proteinGroups.txt", url_file_path="data/proteinGroups_url.txt")
     df = pd.read_csv(file, sep='\t', header=0, index_col=0, usecols=['Protein IDs','Gene names','Fasta headers'])
-    
-    """by_group={}
-    for ID in df.index:
-        if ';' in ID:
-            headers = df['Fasta headers'][ID].split(';')
-            names=''
-            for i in headers:
-                if i !='':
-                    n = i.split('|')[2].split('=')[0].strip('OS')
-                    names=names+n+';'
-            names=names[:-1]
-            by_group[ID]=names
-        else: 
-            i = df['Fasta headers'][ID]
-            if str(i) != 'nan':
-                i.split('|')[2].split('=')[0].strip('OS')
-                by_group[ID]=i
-    by_group = pd.Series(list(by_group.values()), index=by_group.keys())
-
-    df['Names']=by_group"""
 
     return df
     
     
-                
+def names_FragPipe(month='June', contains=['Subject1']):
+    file_name="data/combined_protein_{0}_FP.tsv".format(month)
+    url_file_path="data/combined_protein_{0}_FP_url.txt".format(month)
+    file = download_file(download_to_path=file_name, url_file_path=url_file_path)
+    df = pd.read_csv(file, sep='\t', header=0, index_col=0, usecols=['Protein ID','Gene Names','Description'])
+    return df               
