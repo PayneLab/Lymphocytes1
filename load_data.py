@@ -52,7 +52,8 @@ def load_FragPipe(month='June', contains=['Subject1']):
         return False
         
     suffix="Total Intensity"
-    not_contains=['15']#drop extra replicate - Yiran said it wasn't good quality, I just forgot to not run it so for now I'll exclude it at this level
+    if month=='June':not_contains=['15']#drop extra replicate - Yiran said these two weren't good quality, I just forgot to not run it so for now I'll exclude it at this level
+    else: not_contains=[]
 
     with open(file, 'r') as _file:
         line = _file.readline().strip()
@@ -72,6 +73,14 @@ def load_FragPipe(month='June', contains=['Subject1']):
     #df = df.drop(df[df.Reverse == '+'].index)
     #df = df.drop(df[df['Only identified by site'] == '+'].index)
     df = df[headings]
+    
+    
+    # Remove the "Total Intensity" part of the column names
+    new_names={}
+    for c in df.columns.values: 
+        new_names[c] = c.split(' ')[0]
+    df.rename(columns=new_names, inplace=True)
+    df.head()
 
     return df
 
