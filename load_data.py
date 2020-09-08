@@ -13,7 +13,7 @@ def load_max_quant():
     #    By default, it will look for ones starting with 'Reporter intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    file = download_file(download_to_path="data/proteinGroups-Sub1-ungrouped-not_LFQ_norm.txt", url_file_path="data/proteinGroups_url.txt")
+    file = download_file(download_to_path="data/proteinGroups-Sub1-noMBR.txt", url_file_path="data/proteinGroups_url.txt")
         
     prefix="Intensity"
     contains=["_"]

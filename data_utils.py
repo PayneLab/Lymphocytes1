@@ -6,6 +6,11 @@ from scipy.stats import ttest_ind
 from statistics import mean
 import pandas as pd
 
+def normalize(data_raw):
+    data_log2 = log2(data_raw.replace(0,nan))
+    data = data_log2.apply(lambda series: series-median(series.dropna()))
+    return data
+
 def get_of_type(cell_type, names, option='contains'):
     if option=='contains':
         cells_of_type = list(s for s in names if cell_type in s)
