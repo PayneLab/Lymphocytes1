@@ -63,7 +63,6 @@ def load_FragPipe(version = 'current', contains=['Subject1']):
     #file_name="data/{0}_FP.tsv".format(version)
     #url_file_path="data/index_url.txt".format(version)
     file = get_file(key = version)
-    print(file)
     if file==1:
         print("Error with file download.")
         return False
