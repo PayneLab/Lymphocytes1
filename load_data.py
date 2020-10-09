@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 import os.path
+import bs4
 from os import path
 
 #Data loader functions belong here. This is where
@@ -37,22 +38,38 @@ def load_max_quant():
 
     return df
 
-def load_FragPipe(month='June', contains=['Subject1']):
+def get_file(key = 'current'):
+    url_file = open('data/index_url.txt', 'r')
+    url = url_file.read().strip()
+    url_file.close()
+    
+    table_file_path = download_file(download_to_path="data/index_table.tsv", url = url)
+    table = pd.read_csv(table_file_path, sep='\t', header = 0, index_col = 'key')
+    file_url = table.loc[key]
+    
+    file_name="data/{0}.tsv".format(key)
+    url_name = file_url[0]
+    
+    
+    return download_file(download_to_path=file_name, url=url_name)
+
+def load_FragPipe(version = 'current', contains=['Subject1']):
     #Takes a file and returns a dataframe.
     #    file: the file path to read from
     #    The rest of the paramters are used to select the columns.
     #    By default, it will look for ones ending with 'Total intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    file_name="data/combined_protein_{0}_FP.tsv".format(month)
-    url_file_path="data/combined_protein_{0}_FP_url.txt".format(month)
-    file = download_file(download_to_path=file_name, url_file_path=url_file_path)
+    #file_name="data/{0}_FP.tsv".format(version)
+    #url_file_path="data/index_url.txt".format(version)
+    file = get_file(key = version)
+    print(file)
     if file==1:
         print("Error with file download.")
         return False
         
     suffix="Total Intensity"
-    if month=='June':not_contains=['15']#drop extra replicate - Yiran said these two weren't good quality, I just forgot to not run it so for now I'll exclude it at this level
+    if version=='June':not_contains=['15']#drop extra replicate - Yiran said these two weren't good quality, I just forgot to not run it so for now I'll exclude it at this level
     else: not_contains=[]
 
     with open(file, 'r') as _file:
@@ -84,7 +101,7 @@ def load_FragPipe(month='June', contains=['Subject1']):
 
     return df
 
-def download_file(download_to_path="data/datafile.txt", url_file_path="data/url.txt", 
+def download_file(download_to_path="data/datafile.txt", url='', 
                   password_file_path="data/password.txt", redownload=False):
     """Download a file from a given url to the specified location.
     Parameters:
@@ -94,11 +111,14 @@ def download_file(download_to_path="data/datafile.txt", url_file_path="data/url.
     """
         
     if redownload or path.exists(download_to_path) == False: #If the file has been downloaded, or the user wants to update, download the file
+        """
         if path.exists(url_file_path):
             url_file = open(url_file_path, 'r')
             url = url_file.read().strip()
             url_file.close()
         else: 
+        """
+        if url == '':
             print("MISSING URL FILE")
             return 1
         
