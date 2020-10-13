@@ -2,6 +2,9 @@ import pandas as pd
 import requests
 import os.path
 import bs4
+import requests
+import urllib3
+import csv
 from os import path
 
 #Data loader functions belong here. This is where
@@ -51,7 +54,7 @@ def get_file(key = 'current'):
     url_name = file_url[0]
     
     
-    return download_file(download_to_path=file_name, url=url_name)
+    return download_file(download_to_path=file_name, url=url_name, redownload = True)
 
 def load_FragPipe(version = 'current', contains=['Subject1']):
     #Takes a file and returns a dataframe.
@@ -140,16 +143,28 @@ def download_file(download_to_path="data/datafile.txt", url='',
                 get_response = session.get(get_url)
                 soup = bs4.BeautifulSoup(get_response.text, "html.parser")
                 token_tag = soup.find(id="request_token")
-                token = token_tag.get("value")
+                if token_tag is not None:
+                    token = token_tag.get("value")
 
-                # Send a POST request, with the password and token, to get the data
-                payload = {
-                    'password': password,
-                    'request_token': token}
-                response = session.post(post_url, data=payload)
+                    # Send a POST request, with the password and token, to get the data
+                    payload = {
+                        'password': password,
+                        'request_token': token}
+                    response = session.post(post_url, data=payload)
 
-                with open(download_to_path, 'wb') as dest:
-                    dest.write(response.content)
+                    with open(download_to_path, 'wb') as dest:
+                        dest.write(response.content)
+                else:
+                    r = requests.get(get_url)
+                    soup = bs4.BeautifulSoup(r.text, features="lxml")
+                    soup_string = soup.get_text()
+                    write = soup_string.splitlines()
+                    with open(download_to_path, 'wt') as out_file:
+                        tsv_writer = csv.writer(out_file, delimiter='\t')
+                        for i in write:
+                            tsv_writer.writerow(i.split("\t"))
+                        
+                    
     return download_to_path
 
 def load_fasta():
