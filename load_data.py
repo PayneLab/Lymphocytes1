@@ -115,15 +115,7 @@ def download_file(download_to_path="data/datafile.txt", url='',
         
     if redownload or path.exists(download_to_path) == False: #If the file has been downloaded, or the user wants to update, download the file
         if url == '':
-            print("MISSING URL IN PARAMETERS")
-            return 1
-        
-        if path.exists(password_file_path):
-            password_file = open(password_file_path, 'r')
-            password = password_file.read().strip()
-            password_file.close()
-        else:
-            print("MISSING PASSWORD FILE")
+            print("URL MUST BE SPECIFIED FOR DOWNLOAD")
             return 1
         
         for i in range(2):
@@ -137,10 +129,17 @@ def download_file(download_to_path="data/datafile.txt", url='',
                 get_response = session.get(get_url)
                 soup = bs4.BeautifulSoup(get_response.text, "html.parser")
                 token_tag = soup.find(id="request_token")
+                #print (token_tag)
+                #print (type(token_tag))
                 
                 #This cheks if there is a password file and if it found a password requirement on the file
-                if token_tag is not None and path.exists(password_file_path):
-                    print("Error 1")
+                if token_tag is not None:
+                    #This identifies if the error was with the password file path.
+                    if path.exists(password_file_path) == False:
+                        print("MISSING PASSWORD FILE")
+                        return 1
+                
+                    #print("Checking password...")
                     password_file = open(password_file_path, 'r')
                     password = password_file.read().strip()
                     password_file.close()
@@ -155,23 +154,13 @@ def download_file(download_to_path="data/datafile.txt", url='',
                     with open(download_to_path, 'wb') as dest:
                         dest.write(response.content)
                         
-                #This identifies if the error was with the password file path.
-                elif path.exists(password_file_path) == False:
-                    print("Error 2")
-                    print("MISSING PASSWORD FILE")
-                    return 1
                 
                 #This will download the file if it was not password protected
                 else:
-                    print("Error 3")
-                    r = requests.get(get_url)
-                    soup = bs4.BeautifulSoup(r.text, features="lxml")
-                    soup_string = soup.get_text()
-                    write = soup_string.splitlines()
-                    with open(download_to_path, 'wt') as out_file:
-                        tsv_writer = csv.writer(out_file, delimiter='\t')
-                        for i in write:
-                            tsv_writer.writerow(i.split("\t"))
+                    #print("No password needed")
+                    response = requests.get(post_url, allow_redirects=True)
+                    with open(download_to_path, 'wb') as out_file:
+                        out_file.write(response.content)
                         
                     
     return download_to_path
