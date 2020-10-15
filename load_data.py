@@ -10,14 +10,14 @@ from os import path
 #Data loader functions belong here. This is where
 #  information about the data files is found.
 
-def load_max_quant():
+def load_max_quant(version = 'current'):
     #Takes a file and returns a dataframe.
     #    file: the file path to read from
     #    The rest of the paramters are used to select the columns.
     #    By default, it will look for ones starting with 'Reporter intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    file = download_file(download_to_path="data/proteinGroups-Sub1-noMBR.txt", url_file_path="data/proteinGroups_url.txt")
+    file = get_file(key = version)#We need to add max_quant files to the index_url on box so we can use their keys on this
         
     prefix="Intensity"
     contains=["_"]
@@ -42,6 +42,9 @@ def load_max_quant():
     return df
 
 def get_file(key = 'current'):
+    #Takes the version we are looking for and sets up a table
+    #from the url file so that we can use the version passed in as
+    #a key to identify what url from the index table to download.
     url_file = open('data/index_url.txt', 'r')
     url = url_file.read().strip()
     url_file.close()
@@ -63,8 +66,6 @@ def load_FragPipe(version = 'current', contains=['Subject1']):
     #    By default, it will look for ones ending with 'Total intensity'
     #        that do not contain 'count' or 'corrected' and use the 'Protein IDs'
     #        column as the indecies. These will be the raw intensity values.
-    #file_name="data/{0}_FP.tsv".format(version)
-    #url_file_path="data/index_url.txt".format(version)
     file = get_file(key = version)
     if file==1:
         print("Error with file download.")
@@ -113,15 +114,8 @@ def download_file(download_to_path="data/datafile.txt", url='',
     """
         
     if redownload or path.exists(download_to_path) == False: #If the file has been downloaded, or the user wants to update, download the file
-        """
-        if path.exists(url_file_path):
-            url_file = open(url_file_path, 'r')
-            url = url_file.read().strip()
-            url_file.close()
-        else: 
-        """
         if url == '':
-            print("MISSING URL FILE")
+            print("MISSING URL IN PARAMETERS")
             return 1
         
         if path.exists(password_file_path):
@@ -143,7 +137,13 @@ def download_file(download_to_path="data/datafile.txt", url='',
                 get_response = session.get(get_url)
                 soup = bs4.BeautifulSoup(get_response.text, "html.parser")
                 token_tag = soup.find(id="request_token")
-                if token_tag is not None:
+                
+                #This cheks if there is a password file and if it found a password requirement on the file
+                if token_tag is not None and path.exists(password_file_path):
+                    print("Error 1")
+                    password_file = open(password_file_path, 'r')
+                    password = password_file.read().strip()
+                    password_file.close()
                     token = token_tag.get("value")
 
                     # Send a POST request, with the password and token, to get the data
@@ -154,7 +154,16 @@ def download_file(download_to_path="data/datafile.txt", url='',
 
                     with open(download_to_path, 'wb') as dest:
                         dest.write(response.content)
+                        
+                #This identifies if the error was with the password file path.
+                elif path.exists(password_file_path) == False:
+                    print("Error 2")
+                    print("MISSING PASSWORD FILE")
+                    return 1
+                
+                #This will download the file if it was not password protected
                 else:
+                    print("Error 3")
                     r = requests.get(get_url)
                     soup = bs4.BeautifulSoup(r.text, features="lxml")
                     soup_string = soup.get_text()
